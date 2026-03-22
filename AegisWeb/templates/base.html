@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AEGIS SYSTEMS{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#000000',
+                        card: '#111111',
+                        border: '#222222',
+                        primary: '#ffffff',
+                        'primary-hover': '#e2e8f0',
+                        muted: '#888888',
+                        danger: '#ff3333'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white font-sans min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="border-b border-white/10 sticky top-0 bg-black/80 backdrop-blur-md z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/"
+                class="flex items-center gap-3 text-xl font-bold tracking-widest uppercase hover:opacity-80 transition-opacity">
+                <img class="h-8 w-8 invert" src="/static/img/aegisSystems-simplew.png" alt="AEGIS Logo">
+                AEGIS SYSTEMS
+            </a>
+
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-400">
+                    <a href="/precios" class="hover:text-white transition-colors">PRECIOS</a>
+                    <a href="/seguridad" class="hover:text-white transition-colors">SEGURIDAD</a>
+                    <a href="/contacto" class="hover:text-white transition-colors">CONTACTO</a>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    {% if session.get('usuario') %}
+                    <a href="/panel_control"
+                        class="text-sm font-bold bg-white text-black px-4 py-2 rounded hover:bg-gray-200 transition-colors uppercase">
+                        Panel de Control
+                    </a>
+                    <a href="/cerrar_sesion" class="text-white hover:text-gray-300">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </a>
+                    {% else %}
+                    <a href="/iniciar_sesion"
+                        class="text-sm font-bold border border-white/20 px-4 py-2 rounded hover:bg-white hover:text-black transition-all uppercase">
+                        ÁREA CLIENTE
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-white/10 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3 text-sm font-bold tracking-widest text-gray-500 uppercase">
+                <img class="h-6 w-6 opacity-50 invert" src="/static/img/aegisSystems-simplew.png" alt="Logo">
+                &copy; 2026 AEGIS SYSTEMS
+            </div>
+            <div class="text-gray-500 text-sm">
+                soporte@aegissystem.es
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

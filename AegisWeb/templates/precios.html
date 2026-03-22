@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="py-24 bg-black">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold uppercase tracking-widest mb-4 text-white">Nuestros Planes</h2>
+            <div class="h-1 w-20 bg-white mx-auto"></div>
+            <p class="mt-4 text-gray-400">Potencia escalable para tus necesidades.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div
+                class="bg-[#111] border border-[#222] p-8 rounded-lg hover:border-white/30 transition-all duration-300 group">
+                <h3 class="text-xl font-bold text-gray-400 mb-2">BASIC</h3>
+                <div class="text-4xl font-bold text-white mb-6">29€<span
+                        class="text-sm text-gray-500 font-normal">/mes</span></div>
+                <ul class="space-y-4 mb-8 text-gray-300">
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-microchip text-white"></i> 2 vCore CPU
+                    </li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-memory text-white"></i> 4 GB RAM</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-hdd text-white"></i> 80 GB SSD NVMe</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-network-wired text-white"></i> 1 Gbps
+                        Uplink</li>
+                </ul>
+                <a href="/contacto"
+                    class="block w-full py-3 text-center border border-white/20 text-white font-bold uppercase text-sm hover:bg-white hover:text-black transition-all rounded">
+                    Solicitar
+                </a>
+            </div>
+
+            <div
+                class="bg-[#161616] border border-white/20 p-8 rounded-lg transform md:-translate-y-4 shadow-2xl shadow-white/5 relative">
+                <div
+                    class="absolute top-0 right-0 bg-white text-black text-xs font-bold px-3 py-1 uppercase rounded-bl">
+                    Popular</div>
+                <h3 class="text-xl font-bold text-white mb-2">PRO</h3>
+                <div class="text-4xl font-bold text-white mb-6">59€<span
+                        class="text-sm text-gray-500 font-normal">/mes</span></div>
+                <ul class="space-y-4 mb-8 text-gray-300">
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-microchip text-white"></i> 4 vCore CPU
+                    </li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-memory text-white"></i> 16 GB RAM</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-hdd text-white"></i> 200 GB SSD NVMe</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-network-wired text-white"></i> 1 Gbps
+                        Uplink</li>
+                </ul>
+                <a href="/contacto"
+                    class="block w-full py-3 text-center bg-white text-black font-bold uppercase text-sm hover:bg-gray-200 transition-all rounded">
+                    Solicitar
+                </a>
+            </div>
+
+            <div
+                class="bg-[#111] border border-[#222] p-8 rounded-lg hover:border-white/30 transition-all duration-300 group">
+                <h3 class="text-xl font-bold text-gray-400 mb-2">ENTERPRISE</h3>
+                <div class="text-4xl font-bold text-white mb-6">129€<span
+                        class="text-sm text-gray-500 font-normal">/mes</span></div>
+                <ul class="space-y-4 mb-8 text-gray-300">
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-microchip text-white"></i> 8 vCore CPU
+                    </li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-memory text-white"></i> 32 GB RAM</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-hdd text-white"></i> 500 GB SSD NVMe</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-network-wired text-white"></i> 10 Gbps
+                        Uplink</li>
+                </ul>
+                <a href="/contacto"
+                    class="block w-full py-3 text-center border border-white/20 text-white font-bold uppercase text-sm hover:bg-white hover:text-black transition-all rounded">
+                    Solicitar
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

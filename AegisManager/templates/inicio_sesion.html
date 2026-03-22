@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS MANAGER - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#000000',
+                        card: '#111111',
+                        border: '#222222',
+                        primary: '#ffffff',
+                        'primary-hover': '#e2e8f0',
+                        muted: '#888888',
+                        danger: '#ff3333'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for sidebar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-white dark:bg-bg text-black dark:text-primary font-sans h-screen flex items-center justify-center p-4 transition-colors duration-300">
+
+    <div class="fixed top-6 right-6">
+        <button onclick="alternarTema()"
+            class="w-10 h-10 rounded-full border border-gray-200 dark:border-border flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-all shadow-sm dark:shadow-none">
+            <i class="fa-solid fa-moon dark:hidden"></i>
+            <i class="fa-solid fa-sun hidden dark:block"></i>
+        </button>
+    </div>
+
+    <div class="flex justify-center items-center w-full min-h-screen">
+        <div
+            class="w-full max-w-[420px] p-10 rounded bg-white dark:bg-card border border-gray-200 dark:border-border shadow-2xl dark:shadow-none animate-[fadeIn_0.6s_ease-out]">
+            <div class="text-center mb-8">
+                <div
+                    class="flex items-center justify-center gap-3 text-lg font-bold uppercase tracking-[2px] mb-2 text-black dark:text-white">
+                    <img class="h-8 w-8 dark:invert-0 invert" src="/static/img/aegisSystems-simplew.png"
+                        alt="AEGIS Logo">
+                    AEGIS MANAGER
+                </div>
+                <p class="text-slate-500 dark:text-muted">Access your Virtual Environment</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="mb-6">
+                    <label class="block mb-2 text-sm font-medium" for="host">Proxmox Host / IP</label>
+                    <input type="text" id="host" required placeholder="e.g. 192.168.1.100"
+                        class="w-full p-3 rounded bg-gray-50 dark:bg-black border border-gray-200 dark:border-border text-black dark:text-white text-base focus:outline-none focus:border-black dark:focus:border-primary focus:ring-1 focus:ring-black/10 dark:focus:ring-primary/20 transition-all">
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 text-sm font-medium" for="username">Username</label>
+                    <input type="text" id="username" required placeholder="root"
+                        class="w-full p-3 rounded bg-gray-50 dark:bg-black border border-gray-200 dark:border-border text-black dark:text-white text-base focus:outline-none focus:border-black dark:focus:border-primary focus:ring-1 focus:ring-black/10 dark:focus:ring-primary/20 transition-all">
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 text-sm font-medium" for="password">Password</label>
+                    <input type="password" id="password" required placeholder="********"
+                        class="w-full p-3 rounded bg-gray-50 dark:bg-black border border-gray-200 dark:border-border text-black dark:text-white text-base focus:outline-none focus:border-black dark:focus:border-primary focus:ring-1 focus:ring-black/10 dark:focus:ring-primary/20 transition-all">
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 text-sm font-medium" for="realm">Realm</label>
+                    <select id="realm"
+                        class="w-full p-3 rounded bg-gray-50 dark:bg-black border border-gray-200 dark:border-border text-black dark:text-white text-base focus:outline-none focus:border-black dark:focus:border-primary focus:ring-1 focus:ring-black/10 dark:focus:ring-primary/20 transition-all">
+                        <option value="pam">Linux PAM standard authentication</option>
+                        <option value="pve">Proxmox VE authentication server</option>
+                    </select>
+                </div>
+
+                <div id="error-message" class="text-danger mb-4 text-center text-sm hidden"></div>
+
+                <button type="submit"
+                    class="w-full py-3 px-6 rounded font-bold uppercase tracking-wide border border-black dark:border-primary bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-primary-hover transition-colors flex items-center justify-center gap-2">
+                    <span id="btn-text">Connect</span>
+                    <div id="btn-loader"
+                        class="hidden w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin">
+                    </div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/controlador_interfaz.js"></script>
+    <script>
+        // Specific logic for login page
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const host = document.getElementById('host').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const realm = document.getElementById('realm').value;
+
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            const errorMsg = document.getElementById('error-message');
+
+            // Loading state
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'block';
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/iniciar-sesion', { // Updated API endpoint spanish
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host, username, password, realm })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('proxmox_host', host);
+
+                    if (data.ticket) {
+                        document.cookie = `PVEAuthCookie=${data.ticket}; path=/; SameSite=Lax;`;
+                    }
+
+                    window.location.href = '/panel'; // Updated redirect spanish
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.detalle || 'Fallo de inicio de sesión');
+                }
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btnText.style.display = 'block';
+                btnLoader.style.display = 'none';
+            }
+        });
+    </script>
+    <footer
+        class="mt-auto py-8 text-center text-[10px] font-bold uppercase tracking-[2px] text-slate-400 dark:text-zinc-600">
+        <p>&copy; 2026 AEGIS SYSTEMS | <a href="https://aegissystem.es" target="_blank"
+                class="hover:text-black dark:hover:text-white transition-colors">AEGISSYSTEM.ES</a></p>
+    </footer>
+</body>
+
+</html>

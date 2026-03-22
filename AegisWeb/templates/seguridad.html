@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="py-24 bg-[#0a0a0a]">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold uppercase tracking-widest mb-6 text-white">
+                    Seguridad de <span class="text-gray-500">Grado Militar</span>
+                </h2>
+                <div class="space-y-8">
+                    <div class="flex gap-4">
+                        <div
+                            class="flex-shrink-0 w-12 h-12 bg-[#111] border border-[#333] flex items-center justify-center rounded">
+                            <i class="fa-solid fa-shield-halved text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Bastión de Seguridad</h3>
+                            <p class="text-gray-400">Acceso restringido y auditado a través de un único punto de entrada
+                                (Bastion Host), garantizando que tu infraestructura permanezca invisible a escaneos no
+                                autorizados.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div
+                            class="flex-shrink-0 w-12 h-12 bg-[#111] border border-[#333] flex items-center justify-center rounded">
+                            <i class="fa-solid fa-fire text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">OPNsense Intelligence</h3>
+                            <p class="text-gray-400">Firewall de última generación basado en OPNsense con reglas de
+                                filtrado inteligentes, detección de intrusiones (IDS/IPS) y análisis de tráfico en
+                                tiempo real.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div
+                            class="flex-shrink-0 w-12 h-12 bg-[#111] border border-[#333] flex items-center justify-center rounded">
+                            <i class="fa-solid fa-lock text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Aislamiento Total</h3>
+                            <p class="text-gray-400">Cada cliente opera en VLANs segregadas con políticas de Zero Trust.
+                                Tus datos son tuyos y de nadie más.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="relative h-[400px] bg-[#111] rounded border border-[#222] p-4 flex items-center justify-center overflow-hidden">
+                <div
+                    class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#333_1px,_transparent_1px)] bg-[size:20px_20px] opacity-20">
+                </div>
+                <div class="text-center">
+                    <i class="fa-solid fa-server text-9xl text-[#222] animate-pulse"></i>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <i class="fa-solid fa-shield text-6xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

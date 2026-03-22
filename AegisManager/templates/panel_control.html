@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS MANAGER - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#000000',
+                        card: '#111111',
+                        border: '#222222',
+                        primary: '#ffffff',
+                        'primary-hover': '#e2e8f0',
+                        muted: '#888888',
+                        danger: '#ff3333',
+                        success: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for sidebar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-bg text-black dark:text-primary font-sans min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-bg border-b border-gray-200 dark:border-border py-4 sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center gap-3 text-2xl font-bold uppercase tracking-wide">
+                <img class="h-10 w-10 dark:invert-0 invert" src="/static/img/aegisSystems-simplew.png" alt="AEGIS Logo">
+                AEGIS MANAGER
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="alternarTema()"
+                    class="w-9 h-9 rounded-full border border-gray-200 dark:border-border flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+                    <i class="fa-solid fa-moon dark:hidden text-sm"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-sm"></i>
+                </button>
+                <span class="text-slate-500 dark:text-muted text-sm hidden sm:inline" id="connected-host">Connected to:
+                    ...</span>
+                <button onclick="cerrarSesion()"
+                    class="px-3 py-1.5 rounded text-sm font-semibold border border-black dark:border-border bg-black dark:bg-transparent text-white dark:text-white hover:bg-gray-800 dark:hover:bg-white dark:hover:text-black transition-all">
+                    LOGOUT
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="max-w-[1400px] mx-auto px-6 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8">
+
+                <!-- Sidebar: Nodes -->
+                <aside
+                    class="bg-white dark:bg-card border border-gray-200 dark:border-border rounded p-4 h-fit shadow-sm dark:shadow-none">
+                    <h3
+                        class="text-lg font-bold mb-4 pb-2 border-b border-gray-100 dark:border-border uppercase tracking-wide">
+                        Nodes</h3>
+                    <ul class="space-y-1" id="node-list">
+                        <!-- Populated by JS -->
+                        <li class="text-center text-slate-400 py-4 text-sm italic italic">Cargando nodos...</li>
+                    </ul>
+                </aside>
+
+                <!-- Main: VMs -->
+                <section>
+                    <!-- Node Stats Panel -->
+                    <div id="node-stats-panel" class="hidden mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div
+                            class="bg-white dark:bg-card border border-gray-200 dark:border-border p-4 rounded shadow-sm dark:shadow-none">
+                            <div
+                                class="text-[10px] text-slate-500 dark:text-muted font-bold uppercase mb-2 tracking-wider">
+                                Node CPU</div>
+                            <div class="flex items-end gap-2">
+                                <span id="node-cpu-val" class="text-xl font-bold">--%</span>
+                            </div>
+                            <div class="h-1 bg-gray-100 dark:bg-white/10 mt-2 rounded overflow-hidden">
+                                <div id="node-cpu-bar" class="h-full bg-black dark:bg-white transition-all duration-500"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-card border border-gray-200 dark:border-border p-4 rounded shadow-sm dark:shadow-none">
+                            <div
+                                class="text-[10px] text-slate-500 dark:text-muted font-bold uppercase mb-2 tracking-wider">
+                                Node Memory</div>
+                            <div class="flex items-end gap-2 text-sm">
+                                <span id="node-mem-val" class="text-xl font-bold">--%</span>
+                                <span id="node-mem-txt" class="text-xs text-slate-400 dark:text-muted mb-1 ml-auto">-- /
+                                    -- GiB</span>
+                            </div>
+                            <div class="h-1 bg-gray-100 dark:bg-white/10 mt-2 rounded overflow-hidden">
+                                <div id="node-mem-bar" class="h-full bg-black dark:bg-white transition-all duration-500"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-card border border-gray-200 dark:border-border p-4 rounded shadow-sm dark:shadow-none flex items-center justify-between">
+                            <div>
+                                <div
+                                    class="text-[10px] text-slate-500 dark:text-muted font-bold uppercase mb-1 tracking-wider">
+                                    Uptime</div>
+                                <div id="node-uptime" class="text-lg font-bold">--</div>
+                            </div>
+                            <i class="fa-solid fa-server text-slate-300 dark:text-muted text-xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-slate-800 dark:text-white" id="current-view-title">Virtual
+                            Machines</h2>
+                        <button
+                            class="px-3 py-1.5 rounded text-xs font-bold border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all uppercase tracking-tight"
+                            onclick="cargarMaquinas()">Refresh</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="vm-grid">
+                        <!-- Populated by JS -->
+                        <div class="col-span-full text-center py-12 text-slate-400 italic">
+                            Select a node to view VMs
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer
+        class="py-8 text-center text-[10px] font-bold uppercase tracking-[2px] text-slate-400 dark:text-zinc-600 border-t border-gray-100 dark:border-border mt-auto">
+        <p>&copy; 2026 AEGIS SYSTEMS | <a href="https://aegissystem.es" target="_blank"
+                class="hover:text-black dark:hover:text-white transition-colors">AEGISSYSTEM.ES</a></p>
+    </footer>
+
+    <script src="/static/js/controlador_interfaz.js"></script>
+    <script>
+        // Init dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            const host = localStorage.getItem('proxmox_host');
+            if (!host) {
+                window.location.href = '/';
+                return;
+            }
+            document.getElementById('connected-host').textContent = `Host: ${host}`;
+            cargarNodos();
+        });
+    </script>
+</body>
+
+</html>

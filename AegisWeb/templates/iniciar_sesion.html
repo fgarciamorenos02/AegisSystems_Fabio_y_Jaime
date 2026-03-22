@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-80px-100px)]">
+    <div class="w-full max-w-md p-8 bg-[#111] border border-[#222] rounded-lg shadow-2xl relative overflow-hidden">
+        <!-- Background Glow -->
+        <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50">
+        </div>
+
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold uppercase tracking-widest text-white mb-2">Acceso Cliente</h2>
+            <p class="text-gray-500 text-sm">Gestiona tu infraestructura cloud</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="mb-6 p-3 rounded bg-red-900/20 border border-red-900/50 text-red-400 text-sm text-center">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form action="/iniciar_sesion" method="POST">
+            <div class="mb-6">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2"
+                    for="nombre_usuario">Usuario</label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" required
+                    class="w-full bg-black border border-[#333] text-white p-3 rounded focus:outline-none focus:border-white transition-colors">
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2"
+                    for="contrasena">Contraseña</label>
+                <input type="password" id="contrasena" name="contrasena" required
+                    class="w-full bg-black border border-[#333] text-white p-3 rounded focus:outline-none focus:border-white transition-colors">
+            </div>
+
+            <button type="submit"
+                class="w-full py-3 bg-white text-black font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors rounded">
+                Entrar
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

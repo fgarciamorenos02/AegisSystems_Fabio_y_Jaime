@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS MANAGER - VM Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#000000',
+                        card: '#111111',
+                        border: '#222222',
+                        primary: '#ffffff',
+                        'primary-hover': '#e2e8f0',
+                        muted: '#888888',
+                        danger: '#ff3333',
+                        success: '#ffffff',
+                        warning: '#aaaaaa'
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for sidebar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-bg text-black dark:text-primary font-sans min-h-screen transition-colors duration-300">
+
+    <header class="bg-white dark:bg-card border-b border-gray-200 dark:border-border py-4">
+        <div class="max-w-[1400px] mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center gap-3 text-xl font-bold uppercase tracking-wide">
+                <img class="h-10 w-10 dark:invert-0 invert" src="/static/img/aegisSystems-simplew.png" alt="AEGIS Logo">
+                AEGIS MANAGER
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="alternarTema()"
+                    class="w-9 h-9 rounded-full border border-gray-200 dark:border-border flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+                    <i class="fa-solid fa-moon dark:hidden text-sm"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-sm"></i>
+                </button>
+                <button onclick="window.location.href='/panel'"
+                    class="px-3 py-1.5 rounded text-sm font-semibold border border-black dark:border-border bg-black dark:bg-transparent text-white dark:text-white hover:bg-gray-800 dark:hover:bg-white dark:hover:text-black transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Dashboard
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1400px] mx-auto px-6 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-8 animate-[slideUp_0.5s_ease-out]">
+            <div>
+                <h1 class="text-3xl font-bold" id="vm-name">Loading...</h1>
+                <div class="flex gap-4 items-center mt-2">
+                    <span id="vm-id" class="text-muted text-lg">ID: --</span>
+                    <span id="vm-status-badge"
+                        class="px-3 py-1 rounded-full text-sm font-bold bg-white/10 text-muted">--</span>
+                </div>
+            </div>
+            <div class="text-muted text-sm">
+                Last update: <span id="last-update" class="font-mono">Never</span>
+            </div>
+        </div>
+
+        <!-- Realtime Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+            <div
+                class="bg-white dark:bg-card border border-gray-200 dark:border-border rounded p-6 shadow-sm dark:shadow-none">
+                <div class="text-slate-500 dark:text-muted text-sm uppercase tracking-wider mb-2"><i
+                        class="fa-solid fa-microchip mr-2"></i>
+                    CPU Usage</div>
+                <div class="text-3xl font-bold text-black dark:text-white mb-2" id="cpu-usage">0%</div>
+                <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+                    <div class="h-full bg-black dark:bg-white transition-all duration-500 rounded" id="cpu-bar"
+                        style="width: 0%">
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-card border border-gray-200 dark:border-border rounded p-6 shadow-sm dark:shadow-none">
+                <div class="text-slate-500 dark:text-muted text-sm uppercase tracking-wider mb-2"><i
+                        class="fa-solid fa-memory mr-2"></i>
+                    Memory Usage</div>
+                <div class="text-3xl font-bold text-black dark:text-white mb-2" id="mem-usage">0%</div>
+                <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden mb-2">
+                    <div class="h-full bg-black dark:bg-white transition-all duration-500 rounded" id="mem-bar"
+                        style="width: 0%">
+                    </div>
+                </div>
+                <div class="text-xs text-slate-400 dark:text-muted text-right" id="mem-text">0 / 0 GiB</div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-card border border-gray-200 dark:border-border rounded p-6 shadow-sm dark:shadow-none">
+                <div class="text-slate-500 dark:text-muted text-sm uppercase tracking-wider mb-2"><i
+                        class="fa-solid fa-network-wired mr-2"></i> Net In/Out</div>
+                <div class="text-2xl font-bold mt-4 text-black dark:text-white" id="net-usage">0 / 0 KB/s</div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-card border border-gray-200 dark:border-border rounded p-6 shadow-sm dark:shadow-none">
+                <div class="text-slate-500 dark:text-muted text-sm uppercase tracking-wider mb-2"><i
+                        class="fa-solid fa-clock mr-2"></i>
+                    Uptime</div>
+                <div class="text-2xl font-bold mt-4 text-black dark:text-white" id="uptime">0s</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-card border border-border rounded p-6 mb-8 flex flex-wrap gap-4 items-center">
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'start')"
+                class="px-4 py-2 rounded text-sm font-bold border border-success bg-transparent text-success hover:bg-success hover:text-black transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-play"></i> Start</button>
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'shutdown')"
+                class="px-4 py-2 rounded text-sm font-bold border border-warning bg-transparent text-warning hover:bg-warning hover:text-black transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-power-off"></i> Shutdown</button>
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'stop')"
+                class="px-4 py-2 rounded text-sm font-bold border border-danger bg-transparent text-danger hover:bg-danger hover:text-white transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-stop"></i> Stop</button>
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'reboot')"
+                class="px-4 py-2 rounded text-sm font-bold border border-primary bg-primary text-black hover:bg-gray-200 transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-rotate"></i> Reboot</button>
+
+            <div class="w-px h-8 bg-border mx-2"></div>
+
+            <button onclick="lanzarConsola()"
+                class="px-4 py-2 rounded text-sm font-bold border border-primary bg-primary text-black hover:bg-gray-200 transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-terminal"></i> Launch Console</button>
+
+            <div class="w-px h-8 bg-border mx-2"></div>
+
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'suspend')"
+                class="px-4 py-2 rounded text-sm font-bold border border-border bg-transparent text-white hover:border-white transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-pause"></i> Suspend</button>
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'resume')"
+                class="px-4 py-2 rounded text-sm font-bold border border-border bg-transparent text-white hover:border-white transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-play-circle"></i> Resume</button>
+            <button onclick="accionMaquina(nodo, id_vm, tipo, 'reset')"
+                class="px-4 py-2 rounded text-sm font-bold border border-danger text-danger bg-transparent hover:bg-danger hover:text-white transition-all flex items-center gap-2"><i
+                    class="fa-solid fa-bolt"></i> Reset</button>
+        </div>
+
+        <!-- Hardware/Config -->
+        <div class="bg-card border border-border rounded p-8">
+            <h3 class="text-xl font-bold mb-6 pb-4 border-b border-border flex items-center gap-3">
+                <i class="fa-solid fa-screwdriver-wrench"></i> Hardware Configuration
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="config-grid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </main>
+
+    <footer
+        class="py-8 text-center text-[10px] font-bold uppercase tracking-[2px] text-slate-400 dark:text-zinc-600 border-t border-gray-100 dark:border-border mt-auto">
+        <p>&copy; 2026 AEGIS SYSTEMS | <a href="https://aegissystem.es" target="_blank"
+                class="hover:text-black dark:hover:text-white transition-colors">AEGISSYSTEM.ES</a></p>
+    </footer>
+
+    <script src="/static/js/controlador_interfaz.js"></script>
+    <script>
+        // Page specific logic
+        const urlParams = new URLSearchParams(window.location.search);
+        const nodo = urlParams.get('nodo');
+        const id_vm = urlParams.get('id_vm'); // Spanish param
+        const tipo = urlParams.get('tipo');
+
+        // Compatible with english legacy params just in case (optional)
+        const vmid = id_vm || urlParams.get('vmid');
+        // Fix: 'type' variable was not defined, use 'tipo'
+
+        if (!nodo || !vmid || !tipo) {
+            // window.location.href = '/panel'; // Debug: comment out to see error
+            console.error("Missing params", { nodo, vmid, tipo });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (nodo && vmid && tipo) {
+                cargarConfiguracionVM(nodo, vmid, tipo);
+                iniciarSondeoEstadisticas(nodo, vmid, tipo);
+            }
+        });
+    </script>
+</body>
+
+</html>
