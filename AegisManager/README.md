@@ -51,7 +51,7 @@ MONITOR-POR-ANTIGRAVITI/
 
 ---
 
-## 7. Diccionario Técnico de Funciones
+## 4. Diccionario Técnico de Funciones
 
 ### ⚙️ Backend: `app.py`
 | Función | Propósito |
