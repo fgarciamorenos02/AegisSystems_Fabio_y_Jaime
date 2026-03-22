@@ -63,5 +63,5 @@ El sistema Aegis se compone de dos módulos principales que interactúan para pr
 3.  **AegisWeb** -> Integra **AegisManager** mediante un iframe o consultando sus APIs para mostrar el estado de la virtualización.
 4.  **AegisManager** -> Se conecta a la API de **Proxmox** (`proxmoxer`) para obtener datos en tiempo real (CPU, RAM, Estado) y ejecutar comandos (Start, Stop, Console).
 
-#REALIZADO POR JAIME IGLESIAS Y FABIO GARCÍA-MORENO
+#### REALIZADO POR JAIME IGLESIAS Y FABIO GARCÍA-MORENO
 ---
