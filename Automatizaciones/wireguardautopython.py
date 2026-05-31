@@ -38,8 +38,7 @@ def ejecucion_remota_bash():
         time.sleep(1) # Esperar a que el shell responda
 
         # Ejecutamos el script alojado en el servidor
-        # IMPORTANTE: Asegúrate de que la ruta /root/script_vpn.sh sea la correcta
-        canal.send("bash /root/wiresharkauto\n")
+        canal.send("bash /root/WireGuardAuto.sh\n")
         time.sleep(1)
 
         # Inviamos la Clave Pública cuando el script la pida
