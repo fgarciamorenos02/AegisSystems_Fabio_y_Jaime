@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Esquema de Red Animado - Todo el Tráfico</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        .btn-vpn { background-color: #2ecc71; }
+        .btn-vpn:hover { background-color: #27ae60; }
+        .btn-int { background-color: #9b59b6; }
+        .btn-int:hover { background-color: #8e44ad; }
+        .btn-all { background-color: #f39c12; }
+        .btn-all:hover { background-color: #e67e22; }
+        
+        svg {
+            background-color: #121212;
+            border: 1px solid #333;
+            border-radius: 10px;
+            max-width: 100%;
+        }
+        .node rect { fill: #2c3e50; stroke: #ecf0f1; stroke-width: 2; rx: 5; }
+        .node text { fill: #ffffff; font-size: 12px; font-family: monospace; text-anchor: middle; alignment-baseline: middle; }
+        .link { fill: none; stroke: #555; stroke-width: 3; }
+        
+        /* Animaciones de flujo de datos */
+        .flow {
+            fill: none;
+            stroke-width: 4;
+            stroke-dasharray: 10 15;
+            opacity: 0;
+        }
+        .flow.active {
+            opacity: 1;
+            animation: dash 1s linear infinite;
+        }
+        .flow-web { stroke: #3498db; }
+        .flow-vpn { stroke: #2ecc71; }
+        .flow-int { stroke: #9b59b6; }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -25; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button onclick="triggerFlow('web')">🌐 Tráfico Web</button>
+        <button class="btn-vpn" onclick="triggerFlow('vpn')">💻 Teletrabajo</button>
+        <button class="btn-int" onclick="triggerFlow('int')">⚙️ Tráfico Interno</button>
+        <button class="btn-all" onclick="triggerFlow('all')">🌈 Simular Todo el Tráfico</button>
+        <button style="background-color: #e74c3c;" onclick="triggerFlow('none')">⏹️ Detener Todo</button>
+    </div>
+
+    <svg width="800" height="600" id="networkMap" viewBox="0 0 800 600">
+        <path class="link" d="M 150 80 C 250 80, 250 80, 400 80" /> <path class="link" d="M 150 140 C 250 140, 250 80, 400 80" /> <path class="link" d="M 400 80 L 400 200" /> <path class="link" d="M 400 200 L 400 320" /> <path class="link" d="M 400 200 L 250 260 L 250 300" /> <path class="link" d="M 400 200 L 250 260 L 250 360" /> <path class="link" d="M 400 320 L 400 440" /> <path class="link" d="M 400 440 L 300 520" /> <path class="link" d="M 400 440 L 500 520" /> <path id="path-web1" class="flow flow-web" d="M 150 80 C 250 80, 250 80, 400 80" />
+        <path id="path-web2" class="flow flow-web" d="M 400 80 L 400 200" />
+        <path id="path-web3" class="flow flow-web" d="M 400 200 L 400 320" />
+
+        <path id="path-vpn1" class="flow flow-vpn" d="M 150 140 C 250 140, 250 80, 400 80" />
+        <path id="path-vpn2" class="flow flow-vpn" d="M 400 80 L 400 200" />
+        <path id="path-vpn3" class="flow flow-vpn" d="M 400 200 L 250 260 L 250 300" />
+        <path id="path-vpn4" class="flow flow-vpn" d="M 400 200 L 250 260 L 250 360" />
+
+        <path id="path-int1" class="flow flow-int" d="M 400 320 L 400 440" />
+        <path id="path-int2" class="flow flow-int" d="M 400 440 L 300 520" />
+        <path id="path-int3" class="flow flow-int" d="M 400 440 L 500 520" />
+
+        <g class="node"><rect x="50" y="60" width="100" height="40"/><text x="100" y="80">Usuarios Ext</text></g>
+        <g class="node"><rect x="50" y="120" width="100" height="40"/><text x="100" y="140">Teletrabajo</text></g>
+        
+        <g class="node"><rect x="330" y="60" width="140" height="40"/><text x="400" y="80">VPS Gateway (Cloud)</text></g>
+        <g class="node"><rect x="330" y="180" width="140" height="40"/><text x="400" y="200">OPNsense (On-Prem)</text></g>
+        
+        <g class="node"><rect x="180" y="300" width="140" height="40"/><text x="250" y="320">WinSrv (VLAN 10)</text></g>
+        <g class="node"><rect x="180" y="360" width="140" height="40"/><text x="250" y="380">192.168.10.9 (Nuevo)</text></g>
+        
+        <g class="node"><rect x="330" y="300" width="140" height="40"/><text x="400" y="320">Nginx LB (VLAN 30)</text></g>
+        <g class="node"><rect x="330" y="420" width="140" height="40"/><text x="400" y="440">WebSrvs (VLAN 20)</text></g>
+        
+        <g class="node"><rect x="240" y="520" width="120" height="40"/><text x="300" y="540">BBDD (VLAN 40)</text></g>
+        <g class="node"><rect x="440" y="520" width="120" height="40"/><text x="500" y="540">NFS (VLAN 40)</text></g>
+    </svg>
+
+    <script>
+        function triggerFlow(type) {
+            // 1. Detenemos primero todas las animaciones
+            document.querySelectorAll('.flow').forEach(el => el.classList.remove('active'));
+            
+            // 2. Activamos las rutas según la selección
+            if(type === 'web') {
+                document.querySelectorAll('.flow-web').forEach(el => el.classList.add('active'));
+            } else if(type === 'vpn') {
+                document.querySelectorAll('.flow-vpn').forEach(el => el.classList.add('active'));
+            } else if(type === 'int') {
+                document.querySelectorAll('.flow-int').forEach(el => el.classList.add('active'));
+            } else if(type === 'all') {
+                // Si es "all", activamos la clase en todas las rutas a la vez
+                document.querySelectorAll('.flow').forEach(el => el.classList.add('active'));
+            }
+            // Si es 'none', simplemente se queda todo desactivado gracias al paso 1.
+        }
+    </script>
+</body>
+</html>
