@@ -1,0 +1,5 @@
+Flask
+proxmoxer
+urllib3
+requests
+python-dotenv
