@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Contratar Máquina — AEGIS SYSTEMS{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-16">
+
+    <!-- Header -->
+    <div class="text-center mb-16">
+        <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 border border-white/10 px-4 py-2 rounded-full mb-6">
+            <i class="fa-brands fa-ubuntu text-orange-500"></i> Ubuntu 24.04 LTS
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold uppercase tracking-widest text-white mb-4">
+            Servidores
+        </h1>
+        <p class="text-gray-400 text-lg max-w-xl mx-auto">
+            Selecciona el servidor que mejor se adapte a lo que necesitas. Lo prepararemos para ti rápidamente.
+        </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="mb-8 p-4 rounded bg-green-900/20 border border-green-900/50 text-green-400 text-sm font-bold uppercase flex items-center gap-3 max-w-2xl mx-auto">
+        <i class="fa-solid fa-check-circle"></i> {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- VM Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
+        {% for vm in vms %}
+        <div class="relative bg-[#111] border border-[#222] rounded-xl p-6 flex flex-col gap-4 hover:border-white/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl group cursor-pointer"
+             onclick="abrirModal('{{ vm.id }}', '{{ vm.nombre }}', '{{ vm.vcpu }}', '{{ vm.ram }}', '{{ vm.disco }}', '{{ vm.red }}', '{{ vm.precio }}', '{{ vm.so }}', '{{ vm.badge }}')">
+
+            <!-- Badge -->
+            <div class="absolute -top-3 left-6">
+                <span class="text-[10px] font-bold tracking-widest px-3 py-1 rounded-full
+                    {% if vm.badge == 'RECOMENDADO' %} bg-white text-black
+                    {% elif vm.badge == 'POPULAR' %} bg-blue-600 text-white
+                    {% elif vm.badge == 'ENTERPRISE' %} bg-purple-700 text-white
+                    {% elif vm.badge == 'PRO' %} bg-orange-600 text-white
+                    {% else %} bg-[#333] text-gray-400 {% endif %}">
+                    {{ vm.badge }}
+                </span>
+            </div>
+
+            <!-- Icon + Name -->
+            <div class="flex items-center gap-4 pt-3">
+                <div class="w-12 h-12 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                    <i class="fa-brands fa-ubuntu text-orange-500 text-2xl"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-white text-lg">{{ vm.nombre }}</div>
+                    <div class="text-xs text-gray-500">{{ vm.so }}</div>
+                </div>
+            </div>
+
+            <!-- Specs -->
+            <div class="grid grid-cols-2 gap-3 py-4 border-y border-[#222]">
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <i class="fa-solid fa-microchip text-gray-600 w-4"></i>
+                    <span><span class="text-white font-bold">{{ vm.vcpu }}</span> vCPU</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <i class="fa-solid fa-memory text-gray-600 w-4"></i>
+                    <span><span class="text-white font-bold">{{ vm.ram }}</span> RAM</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <i class="fa-solid fa-hard-drive text-gray-600 w-4"></i>
+                    <span><span class="text-white font-bold">{{ vm.disco }}</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <i class="fa-solid fa-network-wired text-gray-600 w-4"></i>
+                    <span><span class="text-white font-bold">{{ vm.red }}</span></span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <p class="text-gray-500 text-sm flex-grow">{{ vm.descripcion }}</p>
+
+            <!-- Price + CTA -->
+            <div class="flex items-center justify-between mt-2">
+                <div>
+                    <span class="text-2xl font-bold text-white">{{ vm.precio }} €</span>
+                    <span class="text-gray-500 text-sm">/mes</span>
+                </div>
+                <div class="px-4 py-2 border border-white/20 text-white text-xs font-bold uppercase rounded group-hover:bg-white group-hover:text-black transition-all">
+                    Contratar
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Info strip -->
+    <div class="border border-[#222] rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 bg-[#0a0a0a]">
+        <div class="flex items-center gap-4">
+            <i class="fa-solid fa-shield-halved text-2xl text-gray-600"></i>
+            <div>
+                <div class="text-white font-bold text-sm">Aprovisionamiento gestionado</div>
+                <div class="text-gray-500 text-xs">El equipo de administración recibirá tu solicitud y configurará la máquina.</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <i class="fa-solid fa-clock text-2xl text-gray-600"></i>
+            <div>
+                <div class="text-white font-bold text-sm">Tiempo estimado</div>
+                <div class="text-gray-500 text-xs">Menos de 24 horas laborables.</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <i class="fa-solid fa-headset text-2xl text-gray-600"></i>
+            <div>
+                <div class="text-white font-bold text-sm">Soporte incluido</div>
+                <div class="text-gray-500 text-xs">soporte@aegissystem.es</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MODAL — Hostname
+     ============================================================ -->
+<div id="modalContratacion"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] hidden items-center justify-center p-4">
+    <div class="bg-[#111] border border-[#333] w-full max-w-lg rounded-xl shadow-2xl">
+
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-[#222] flex justify-between items-start">
+            <div>
+                <h2 class="text-xl font-bold uppercase tracking-widest text-white" id="modalNombreVM">—</h2>
+                <p class="text-gray-500 text-sm mt-1">Configura tu nueva máquina virtual</p>
+            </div>
+            <button onclick="cerrarModal()" class="text-gray-600 hover:text-white transition-colors mt-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Resumen de specs -->
+        <div id="modalSpecs" class="px-6 pt-5 grid grid-cols-2 gap-3 text-sm"></div>
+
+        <!-- Form -->
+        <form action="/contratar_vm" method="POST" class="p-6">
+            <input type="hidden" name="vm_id" id="modalVmId">
+
+            <div class="mb-6">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2" for="hostname">
+                    Hostname de la máquina
+                </label>
+                <input type="text" id="hostname" name="hostname" required
+                    placeholder="ej. mi-servidor-web"
+                    pattern="^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$"
+                    title="Solo letras, números y guiones. Sin espacios."
+                    class="w-full bg-black border border-[#333] text-white p-3 rounded focus:outline-none focus:border-white transition-colors font-mono text-sm">
+                <p class="text-gray-600 text-xs mt-2">Solo letras, números y guiones. Máx. 63 caracteres.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="cerrarModal()"
+                    class="flex-1 py-3 border border-[#333] text-gray-400 font-bold uppercase tracking-wider rounded hover:border-white hover:text-white transition-all text-sm">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-white text-black font-bold uppercase tracking-wider rounded hover:bg-gray-200 transition-colors text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModal(id, nombre, vcpu, ram, disco, red, precio, so, badge) {
+        document.getElementById('modalVmId').value = id;
+        document.getElementById('modalNombreVM').textContent = nombre;
+        document.getElementById('hostname').value = '';
+
+        document.getElementById('modalSpecs').innerHTML = `
+            <div class="flex items-center gap-2 text-gray-400 bg-black/40 rounded p-3">
+                <i class="fa-solid fa-microchip text-gray-600 w-4"></i>
+                <span><span class="text-white font-bold">${vcpu}</span> vCPU</span>
+            </div>
+            <div class="flex items-center gap-2 text-gray-400 bg-black/40 rounded p-3">
+                <i class="fa-solid fa-memory text-gray-600 w-4"></i>
+                <span><span class="text-white font-bold">${ram}</span> RAM</span>
+            </div>
+            <div class="flex items-center gap-2 text-gray-400 bg-black/40 rounded p-3">
+                <i class="fa-solid fa-hard-drive text-gray-600 w-4"></i>
+                <span><span class="text-white font-bold">${disco}</span></span>
+            </div>
+            <div class="flex items-center gap-2 text-gray-400 bg-black/40 rounded p-3">
+                <i class="fa-solid fa-network-wired text-gray-600 w-4"></i>
+                <span><span class="text-white font-bold">${red}</span></span>
+            </div>
+            <div class="col-span-2 flex items-center justify-between bg-black/40 rounded p-3">
+                <span class="text-gray-500 text-xs">${so}</span>
+                <span class="text-white font-bold">${precio} €/mes</span>
+            </div>
+        `;
+
+        const modal = document.getElementById('modalContratacion');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => document.getElementById('hostname').focus(), 100);
+    }
+
+    function cerrarModal() {
+        const modal = document.getElementById('modalContratacion');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+    // Cerrar al hacer click en el fondo
+    document.getElementById('modalContratacion').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+</script>
+{% endblock %}
