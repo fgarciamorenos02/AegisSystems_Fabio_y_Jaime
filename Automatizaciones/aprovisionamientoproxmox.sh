@@ -1,45 +1,41 @@
 #!/bin/bash
 
-################################################################################
-# Herramienta Unificada de Gestión y Aprovisionamiento para Proxmox VE
-# Versión de Producción - Aislamiento Cloud (Tenant Isolation)
-################################################################################
-
+# Configuración estricta de ejecución:
+# -e: Detiene el script inmediatamente si un comando falla.
+# -u: Trata las variables no declaradas como errores.
+# -o pipefail: Devuelve el código de error de un comando fallido dentro de una tubería (pipe).
 set -euo pipefail
 
 # ============================================================================
-# 1. SECCIÓN DE CONFIGURACIÓN (PLANTILLA LIMPIA)
+# VARIABLES DE CONFIGURACIÓN GLOBALES
+# Contienen las credenciales de acceso a la API de Proxmox y las preferencias
+# por defecto para el aprovisionamiento de recursos.
 # ============================================================================
-
-# Datos de conexión al clúster de Proxmox
 IP_PROXMOX="10.0.0.3"
 PUERTO_PROXMOX="8006"
-USUARIO_PROXMOX="usuario"     # Ejemplo: "root@pam"
-REALM_PROXMOX="realmd"       # Ejemplo: "pam"
-CONTRASENA_PROXMOX="contraseña"  # Introducir por entorno o gestor de secretos antes de ejecutar
+USUARIO_PROXMOX="usuario"
+REALM_PROXMOX="realmd"
+CONTRASENA_PROXMOX="contraseña"
 
-# Valores por defecto para el aprovisionamiento
 NODO_POR_DEFECTO="homeserver"
-MEMORIA_POR_DEFECTO="2048"    
-CORES_POR_DEFECTO="2"         
+MEMORIA_POR_DEFECTO="2048"
+CORES_POR_DEFECTO="2"
 
-# Configuración del control de acceso (RBAC Nativo y Aislado)
-ROL_ASIGNADO="PVEVMAdmin"     
+# === CAMBIO APLICADO AQUÍ: ROL RESTRINGIDO DE USUARIO DE MÁQUINA ===
+ROL_ASIGNADO="PVEVMUser"
 
-# Rutas de archivos temporales y logs
+# Archivos temporales para almacenar el estado de la sesión y registrar eventos.
 ARCHIVO_LOG="/var/log/proxmox_manager_$(date +%Y%m%d).log"
 ARCHIVO_TICKET="/tmp/proxmox_ticket_$$.txt"
 ARCHIVO_CSRF="/tmp/proxmox_csrf_$$.txt"
 
-# ============================================================================
-# VARIABLES INTERNAS 
-# ============================================================================
 NUEVO_ID_VM=""
 
 # ============================================================================
-# FUNCIONES BASE DE UTILIDAD Y COMUNICACIÓN API
+# FUNCIONES DE UTILIDAD Y REGISTRO
 # ============================================================================
 
+# Escribe mensajes con marca de tiempo tanto en la consola como en el archivo log.
 registrar_log() {
     local nivel="$1"
     shift
@@ -48,18 +44,28 @@ registrar_log() {
     echo "[${marca_tiempo}] [${nivel}] ${mensaje}" | tee -a "$ARCHIVO_LOG"
 }
 
+# Registra un error grave, ejecuta la función de limpieza y detiene el script.
 salida_error() {
     registrar_log "ERROR" "$1"
     limpieza
     exit 1
 }
 
+# Elimina los archivos temporales que contienen los tokens de sesión.
 limpieza() {
     [[ -f "$ARCHIVO_TICKET" ]] && rm -f "$ARCHIVO_TICKET"
     [[ -f "$ARCHIVO_CSRF" ]] && rm -f "$ARCHIVO_CSRF"
 }
 
+# 'trap' asegura que la función 'limpieza' se ejecute siempre que el script
+# termine, ya sea de forma natural o por un error (interrupción).
 trap limpieza EXIT
+
+# ============================================================================
+# ENVOLTORIOS PARA LA COMUNICACIÓN CON LA API DE PROXMOX
+# Centralizan las llamadas a curl inyectando automáticamente las cookies y 
+# tokens de seguridad necesarios en las cabeceras HTTP.
+# ============================================================================
 
 pve_get() {
     local endpoint="$1"
@@ -75,10 +81,16 @@ pve_post() {
 pve_put() {
     local endpoint="$1"
     local data="$2"
-    # El método PUT es obligatorio en la API de Proxmox para actualizar ACLs
     curl -s -k -X PUT -H "Cookie: PVEAuthCookie=$(cat "$ARCHIVO_TICKET")" -H "CSRFPreventionToken: $(cat "$ARCHIVO_CSRF")" -d "$data" "https://$IP_PROXMOX:$PUERTO_PROXMOX/api2/json$endpoint"
 }
 
+# ============================================================================
+# AUTENTICACIÓN
+# ============================================================================
+
+# Solicita un ticket de acceso a Proxmox usando las credenciales.
+# Extrae el ticket de sesión y el token CSRF de la respuesta JSON y los
+# guarda en archivos temporales para su uso posterior en las llamadas API.
 autenticar() {
     if [[ -z "$CONTRASENA_PROXMOX" || -z "$USUARIO_PROXMOX" ]]; then
         salida_error "Variables de credenciales no configuradas. Por favor, rellénalas en el script."
@@ -102,9 +114,11 @@ autenticar() {
 }
 
 # ============================================================================
-# GESTIÓN DE USUARIOS
+# GESTIÓN DE USUARIOS Y RECURSOS
 # ============================================================================
 
+# Crea un nuevo usuario en Proxmox. Si no se pasa contraseña, genera una 
+# cadena aleatoria usando OpenSSL. No falla si el usuario ya existe.
 crear_usuario() {
     local nombre_usuario="$1"
     local usr_sin_realm="${nombre_usuario%@*}"
@@ -133,9 +147,12 @@ listar_vms() {
 }
 
 # ============================================================================
-# APROVISIONAMIENTO Y ASIGNACIÓN AISLADA
+# LÓGICA DE APROVISIONAMIENTO
 # ============================================================================
 
+# Consulta repetidamente el estado de una tarea asíncrona de Proxmox (como clonar 
+# una VM) usando su UPID. Espera hasta que el estado cambie a "stopped" o alcance 
+# el tiempo máximo definido por el bucle.
 esperar_tarea() {
     local upid="$1"
     local nodo="$2"
@@ -162,6 +179,9 @@ esperar_tarea() {
     salida_error "Tiempo de espera excedido."
 }
 
+# Bloque principal de creación: Valida que el origen sea una plantilla, 
+# busca el siguiente ID libre calculando el máximo actual + 1, ordena clonar 
+# la máquina, ajusta sus recursos y finalmente le asigna permisos exclusivos.
 aprovisionar_vm() {
     local id_plantilla="$1"
     local propietario_vm="$2"
@@ -170,23 +190,19 @@ aprovisionar_vm() {
     local memoria="${5:-$MEMORIA_POR_DEFECTO}"
     local cores="${6:-$CORES_POR_DEFECTO}"
 
-    # 1. Validar plantilla 
     local resp_plantilla=$(pve_get "/nodes/$nodo/qemu/$id_plantilla/config")
     
     if ! echo "$resp_plantilla" | grep -E -q '"template"\s*:\s*1'; then
         salida_error "La máquina $id_plantilla no es una plantilla válida. Respuesta cruda: $resp_plantilla"
     fi
 
-    # 2. Asegurar existencia de usuario
     crear_usuario "$propietario_vm"
 
-    # 3. Obtener siguiente ID disponible
     local resp_recursos=$(pve_get "/cluster/resources?type=vm")
     local id_maximo=$(echo "$resp_recursos" | grep -oE '"vmid":\s*[0-9]+' | awk -F':' '{print $2}' | tr -d ' ' | sort -n | tail -1)
     NUEVO_ID_VM=$((id_maximo + 1))
     registrar_log "INFO" "Siguiente ID libre detectado: $NUEVO_ID_VM"
 
-    # 4. Clonar Plantilla
     registrar_log "INFO" "Clonando plantilla $id_plantilla hacia VM $NUEVO_ID_VM ($nombre_vm)..."
     local resp_clonacion=$(pve_post "/nodes/$nodo/qemu/$id_plantilla/clone" "newid=$NUEVO_ID_VM&name=$nombre_vm&full=1")
     
@@ -197,17 +213,14 @@ aprovisionar_vm() {
     local upid=$(echo "$resp_clonacion" | grep -o 'UPID:[^"]*')
     esperar_tarea "$upid" "$nodo"
 
-    # 5. Configurar recursos de hardware
     registrar_log "INFO" "Configurando recursos (Memoria: $memoria MB, Cores: $cores)..."
     local resp_config=$(pve_post "/nodes/$nodo/qemu/$NUEVO_ID_VM/config" "memory=$memoria&cores=$cores")
     if echo "$resp_config" | grep -q '"error"'; then
         registrar_log "WARN" "Se detectó un error ajustando la configuración: $resp_config"
     fi
 
-    # 6. Asignar Permisos RBAC Aislados (Tenant Isolation)
     registrar_log "INFO" "Enjaulando permisos sobre /vms/$NUEVO_ID_VM con el rol $ROL_ASIGNADO para $propietario_vm..."
     
-    # Se utiliza PUT obligatoriamente para escribir en la lista ACL
     local resp_acl=$(pve_put "/access/acl" "path=/vms/$NUEVO_ID_VM&users=$propietario_vm&roles=$ROL_ASIGNADO")
     
     if echo "$resp_acl" | grep -q '"error"'; then
@@ -218,6 +231,8 @@ aprovisionar_vm() {
     registrar_log "INFO" "ID Asignado: $NUEVO_ID_VM | Nombre: $nombre_vm | Propietario: $propietario_vm"
 }
 
+# Modifica la lista de Control de Acceso (ACL) de una VM existente, 
+# vinculándola a un usuario específico mediante la API.
 asignar_vm_existente() {
     local nombre_usuario="$1"
     local id_vm="$2"
@@ -234,13 +249,18 @@ asignar_vm_existente() {
 }
 
 # ============================================================================
-# INTERFAZ DE MENÚ INTERACTIVO 
+# INTERFAZ DE MENÚ INTERACTIVO
 # ============================================================================
 
+# Mantiene el script en ejecución dentro de un bucle hasta que 
+# se selecciona la opción de salida (6). Procesa la recolección de variables
+# interactivamente mediante el comando 'read' y direcciona hacia las funciones base.
 mostrar_menu() {
-    for iteracion in {1..100000}; do
+    local opcion=""
+    
+    while [[ "$opcion" != "6" ]]; do
         echo "========================================================="
-        echo "       GESTOR DE APROVISIONAMIENTO CLOUD (10.0.0.3)      "
+        echo "        GESTOR DE APROVISIONAMIENTO CLOUD                "
         echo "========================================================="
         echo " 1) Aprovisionar una nueva máquina virtual (VM aislada)"
         echo " 2) Crear o verificar un usuario en el realm pam o pve"
@@ -250,9 +270,7 @@ mostrar_menu() {
         echo " 6) Salir de la aplicación"
         echo "========================================================="
         
-        local opcion=""
         read -p "Seleccione una opción [1-6]: " opcion
-        echo ""
 
         case "$opcion" in
             1)
@@ -263,6 +281,7 @@ mostrar_menu() {
                 read -p "Nombre del usuario propietario (ej: cliente1@pve o admin@pam): " propietario
                 if [[ -z "$propietario" ]]; then echo "Error: El propietario es obligatorio."; echo ""; continue; fi
                 
+                # Asigna automáticamente el dominio del cluster si el usuario lo omite
                 if [[ "$propietario" != *@* ]]; then
                     propietario="${propietario}@pve"
                 fi
@@ -316,7 +335,6 @@ mostrar_menu() {
             6)
                 registrar_log "INFO" "Cierre manual."
                 echo "Saliendo del gestor. ¡Hasta pronto!"
-                exit 0
                 ;;
             *)
                 echo "Opción inválida. Intente de nuevo introduciendo un número del 1 al 6."
@@ -326,13 +344,5 @@ mostrar_menu() {
     done
 }
 
-# ============================================================================
-# CONTROL DE ARRANQUE
-# ============================================================================
-
-if [[ "${1:-}" =~ ^(-h|--help|help)$ ]]; then
-    echo "Uso interactivo: ejecute el script sin parámetros para iniciar el menú."
-    exit 0
-fi
-
+# Ejecución principal
 mostrar_menu
